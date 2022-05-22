@@ -1,12 +1,13 @@
 package main
 
 import (
-	"archive/tar"
-	"compress/gzip"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
+
+	"github.com/pvlrmnnk/wid"
 )
 
 func main() {
@@ -23,28 +24,23 @@ func main() {
 	}
 	defer fr.Close()
 
-	gzr, err := gzip.NewReader(fr)
+	r, err := wid.NewTarGzReader(fr)
 	if err != nil {
 		fail(err)
 	}
-	defer gzr.Close()
+	defer r.Close()
 
-	list := make([]string, 0, 1000)
-
-	tr := tar.NewReader(gzr)
 	for {
-		th, err := tr.Next()
+		file, err := r.Next()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			fail(err)
 		}
-		log.Println(th)
-		list = append(list, th.Name)
-	}
 
-	log.Println(list)
+		fmt.Println(file)
+	}
 }
 
 func fail(err error) {
